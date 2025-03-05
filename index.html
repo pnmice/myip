@@ -2,28 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GeoJS IP Info</title>
+  <title>IP Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" 
+        integrity="sha256-sA+4evkZsm41Z08t0FZ4g2+oaMRC31CHB38ueH68uXo=" crossorigin=""/>
+  <style>
+    /* Center content with a modern design and a gradient background */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ece9e6, #ffffff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      max-width: 800px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 10px;
+      animation: blink 1.5s infinite;
+    }
+    /* Blinking animation */
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .info {
+      margin-bottom: 20px;
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
-  <h1>Your Geo Information</h1>
-  <div id="geo-info">Loading geo information...</div>
+  <div class="container">
+    <h1>Geo Information</h1>
+    <div class="info" id="geo-info">
+      Loading geo information...
+    </div>
+    <div id="map"></div>
+  </div>
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" 
+          integrity="sha256-o2J28e2N7X1PKH1ihI0nF0kIXH7A60nH3CxzEB5JK84=" crossorigin=""></script>
   <script>
-    const url = "https://get.geojs.io/v1/ip/geo.json";
-
-    fetch(url)
+    // Fetch the geo information dynamically
+    fetch("https://get.geojs.io/v1/ip/geo.json")
       .then(response => response.json())
       .then(data => {
-        document.getElementById("geo-info").innerHTML = `
+        // Update the page with the fetched geo data
+        const geoInfo = document.getElementById("geo-info");
+        geoInfo.innerHTML = `
           <p><strong>IP:</strong> ${data.ip}</p>
           <p><strong>Country:</strong> ${data.country}</p>
           <p><strong>Region:</strong> ${data.region}</p>
           <p><strong>City:</strong> ${data.city}</p>
         `;
+
+        // Parse latitude and longitude (if provided)
+        const lat = parseFloat(data.latitude);
+        const lon = parseFloat(data.longitude);
+
+        // Create the map if valid coordinates are available
+        if (!isNaN(lat) && !isNaN(lon)) {
+          const map = L.map('map').setView([lat, lon], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+          }).addTo(map);
+          L.marker([lat, lon]).addTo(map)
+            .bindPopup(`${data.city}, ${data.region}`)
+            .openPopup();
+        } else {
+          document.getElementById("map").innerHTML = "Map data unavailable.";
+        }
       })
       .catch(error => {
         console.error("Error fetching geo data:", error);
         document.getElementById("geo-info").innerText = "Failed to load geo information.";
+        document.getElementById("map").innerHTML = "Map data unavailable.";
       });
   </script>
 </body>
