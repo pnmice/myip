@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GeoJS IP Info</title>
+</head>
+<body>
+  <h1>Your Geo Information</h1>
+  <div id="geo-info">Loading geo information...</div>
+
+  <script>
+    const url = "https://get.geojs.io/v1/ip/geo.json";
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("geo-info").innerHTML = `
+          <p><strong>IP:</strong> ${data.ip}</p>
+          <p><strong>Country:</strong> ${data.country}</p>
+          <p><strong>Region:</strong> ${data.region}</p>
+          <p><strong>City:</strong> ${data.city}</p>
+        `;
+      })
+      .catch(error => {
+        console.error("Error fetching geo data:", error);
+        document.getElementById("geo-info").innerText = "Failed to load geo information.";
+      });
+  </script>
+</body>
+</html>
